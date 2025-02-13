@@ -6,18 +6,39 @@ from typing import Optional
 app = FastAPI()
 
 
-# Le schéma que va définir comment les données recue  doivent 
-class Coord(BaseModel):
+# Le schéma que va définir comment les données recue  doivent être
+class CoordIn(BaseModel):
+    password : str 
+    # dans les infos reçue on doit avoir le mdp
+    # mais on ne va pas le renvoyer (voir class CoordOut)
     lat : float
     lon : float
-    zoom : Optional[int]
+    zoom : Optional[int] = None
+
+# Le schéma que va définir comment les données recue  doivent être
+class CoordOut(BaseModel):
+    password : str 
+    lat : float
+    lon : float
+    zoom : Optional[int] = None
 
 @app.get("/")
 async def hello_world():
     return {"hello" : "world"}
+
+# méthodee post sans paramètre avec filtrage de donnée envoyé
+@app.post("/position/", response_model=CoordOut, response_model_exclude={'password'})
+async def make_position(coord: CoordIn):
+    return coord
+
+# @app.post("/position/", response_model=CoordOut)
+# async def make_position(coord: CoordIn):
+#     return coord
+#Pour cette méthode ne pas meettre password dans CoordOut
+
 # methode post avec paramètre
 @app.post("/position/{priority}")
-async def make_position(priority: int, coord: Coord, value: bool):
+async def make_position(priority: int, coord: CoordIn, value: bool):
     return{"priority": priority, "new_coord": coord.dict(), "value": value}
 
 
